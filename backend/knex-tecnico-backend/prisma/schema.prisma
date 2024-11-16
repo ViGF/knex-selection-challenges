@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Donor {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+
+  //Relacionamento: Um doador pode ter várias doações
+  donations Donation[]
+}
+
+model Donation {
+  id          String    @id @default(uuid())
+  value       Decimal
+  message     String?
+  status      Status    @default(PENDING)
+  createdAt   DateTime  @default(now())
+  confirmedAt DateTime?
+
+  // Relacionamento: Possui um pagamento
+  payment   Payment? @relation(fields: [paymentId], references: [id])
+  paymentId String? @unique
+
+  // Relacionamento: Pertence a um doador
+  donor   Donor  @relation(fields: [donorId], references: [id])
+  donorId String
+}
+
+model Payment {
+  id          String    @id @default(uuid())
+  pix_key     String?
+  qr_code     String
+  status      Status    @default(PENDING)
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime  @default(dbgenerated("NOW() + INTERVAL '15 minutes'"))
+  confirmedAt DateTime?
+
+  //Relacionamento: Pertence a uma doação
+  donation Donation?
+}
+
+enum Status {
+  CONFIRMED
+  PENDING
+  CANCELED
+}

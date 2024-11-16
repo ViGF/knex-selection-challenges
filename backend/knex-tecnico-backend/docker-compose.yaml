@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/home/node/app
+    depends_on:
+      - postgres
+    env_file:
+      - .env.test
+  postgres:
+    image: bitnami/postgresql:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=knex-tecnico
+    volumes:
+      - knex_tecnico_pg_data:/bitnami/postgresql
+
+volumes:
+  knex_tecnico_pg_data:
